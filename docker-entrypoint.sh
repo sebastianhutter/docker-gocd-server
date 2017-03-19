@@ -23,7 +23,7 @@ TMPREPO=$(mktemp)
 if [ -n "$GOCD_YAML_REPOSITORIES" ]; then
   for r in $GOCD_YAML_REPOSITORIES; do
     # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
-    echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"${r}\" />\n</config-repo>" >> ${TMPREPO}
+    echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
   done
   cat ${TMPREPO}
   sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" /etc/go/cruise-config.xml
