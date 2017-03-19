@@ -3,7 +3,7 @@
 # first we need to grep the gocd serverid from the cruise-xml config
 # we dont want that one to be regenerated every single time we do
 # a restart of the docker container
-[ -z "$GOCD_SERVERID" ] && export GOCD_SERVERID=$(grep -o 'serverId=".*"\s' /etc/go/cruise-config.xml | awk '{ gsub("\"",""); gsub("serverId=",""); print $1 }')
+[ -z "$GOCD_SERVERID" ] && export GOCD_SERVERID=$(grep -o 'serverId=".*"' /etc/go/cruise-config.xml | awk '{ gsub("\"",""); gsub("serverId=",""); print $1 }')
 
 # replace configuration variables in the cruise-config.xml
 envsubst < "/cruise-config.xml" > "/etc/go/cruise-config.xml"
