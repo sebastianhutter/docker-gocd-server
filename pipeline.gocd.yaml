@@ -1,5 +1,5 @@
 pipelines:
-  Build:
+  Build_gocdserver:
     group: gocd-server
     label_template: "${repository[:8]}"
     materials:
