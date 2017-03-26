@@ -8,15 +8,6 @@
 # filesystem permissions
 #
 
-# make sure the go user is owner of all go-cd server directories
-ENV GOCD_DATA=/var/lib/go-server
-ENV GOCD_PLUGINS=/goplugins
-ENV GOCD_CONFIG=/etc/go
-ENV GOCD_HOME=/var/go
-ENV GOCD_LOG=/var/log/go-server
-ENV GOCD_SCRIPT=/usr/share/go-server
-ENV DEFAULTS=/etc/default/go-server
-
 for f in "${GOCD_DATA}" "${GOCD_CONFIG}" "${GOCD_LOG}"; do
   chown -R go:go "${f}"
 done
