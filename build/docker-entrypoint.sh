@@ -4,6 +4,26 @@
 # we dont want that one to be regenerated every single time we do
 # a restart of the docker container
 
+#
+# filesystem permissions
+#
+
+# make sure the go user is owner of all go-cd server directories
+ENV GOCD_DATA=/var/lib/go-server
+ENV GOCD_PLUGINS=/goplugins
+ENV GOCD_CONFIG=/etc/go
+ENV GOCD_HOME=/var/go
+ENV GOCD_LOG=/var/log/go-server
+ENV GOCD_SCRIPT=/usr/share/go-server
+ENV DEFAULTS=/etc/default/go-server
+
+for f in "${GOCD_DATA}" "${GOCD_CONFIG}" "${GOCD_LOG}"; do
+  chown -R go:go "${f}"
+done
+
+#
+# configuration file
+#
 
 # save the currenct serverid if not given as environment variable
 [ -z "$GOCD_SERVERID" ] && export GOCD_SERVERID=$(grep -o 'serverId=".*"' ${GOCD_CONFIG}/cruise-config.xml | awk '{ gsub("\"",""); gsub("serverId=",""); print $1 }')
@@ -33,7 +53,6 @@ rm ${TMPREPO}
 fi
 
 # now check if ldap is enabled. if so add ldap to the cruise config
-
 if [ "${GOCD_ENABLE_LDAP,,}" == 'true' ]; then
   TMPLDAP=$(mktemp)
   echo -e "\
@@ -46,6 +65,10 @@ if [ "${GOCD_ENABLE_LDAP,,}" == 'true' ]; then
   sed -i "/<!-- CONFIGLDAP -->/r ${TMPLDAP}" "${GOCD_CONFIG}/cruise-config.xml"
   rm ${TMPLDAP}
 fi
+
+#
+# authorisation and authentication
+#
 
 # and finally we need to get the credentials and git
 # we fetch the credentials from our internal vault
@@ -69,6 +92,10 @@ if [ -e "${GOCD_DATA}/plugins/external" ]; then
 fi
 ln -sf "${GOCD_PLUGINS}" "${GOCD_DATA}/plugins/external"
 chown -R go:go "${GOCD_DATA}/plugins"
+
+#
+# init
+#
 
 # now start the server
 # we start the server daemonized (see the /etc/defaults/go-server DAEMON flag)
