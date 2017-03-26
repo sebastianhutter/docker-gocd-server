@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="89">
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="90">
   <server artifactsdir="artifacts" siteUrl="$GOCD_SITEURL" secureSiteUrl="$GOCD_SECURESITEURL" agentAutoRegisterKey="$GOCD_AGENTAUTOREGISTERKEY" commandRepositoryLocation="default" serverId="$GOCD_SERVERID">
     <!-- our little container expects a single ldap uri with a single base url and filter -->
-    <security allowOnlyKnownUsersToLogin="false">
-      <ldap uri="$GOCD_LDAPURI" managerDn="$GOCD_LDAPMANAGERDN" managerPassword="$GOCD_LDAPMANAGERPASSWORD" searchFilter="$GOCD_LDAPSEARCHFILTER">
-        <bases>
-          <base value="$GOCD_LDAPSEARCHBASE" />
-        </bases>
-      </ldap>
-      <admins>
-        <user>$GOCD_LDAPADMINUSER</user>
-      </admins>
-    </security>
+     <!-- CONFIGLDAP -->
   </server>
   <config-repos>
   <!-- CONFIGREPOS -->

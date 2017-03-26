@@ -1,27 +1,51 @@
-FROM gocd/gocd-server:v17.3.0
+FROM debian:jessie
+MAINTAINER <mail@sebastian-hutter.ch>
 
+
+# build arguments
+ARG GOCD_SERVER_VERSION=17.3.0
 # plugin versions to install
-#ARG PLUGIN_GITHUB_OAUTH_LOGIN=2.3
-ARG PLUGIN_YAML_CONFIG_PLUGIN=0.4.0
+ARG GOCD_PLUGIN_YAML_CONFIG_PLUGIN=0.4.0
+# environment variables used for building and entrypoint
+ENV GOCD_DATA=/var/lib/go-server
+ENV GOCD_PLUGINS=/goplugins
+ENV GOCD_CONFIG=/etc/go
+ENV GOCD_HOME=/var/go
+ENV GOCD_LOG=/var/log/go-server
+ENV GOCD_SCRIPT=/usr/share/go-server
+ENV DEFAULTS=/etc/default/go-server
 
-ENV GO_HOME=/home/go
-ENV GO_DATA=/godata
+# install requirements for the gocd server
+RUN echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/backports.list \
+ && apt-get update \
+ && apt-get install -y curl jq gettext apt-transport-https \
+ && apt-get install -y -t jessie-backports ca-certificates-java openjdk-8-jre-headless \
+ && rm -rf /var/lib/apt/lists/*
 
-# install gettext and jq for our entrypoint
-RUN apk add --no-cache curl jq gettext
+# install the gocd server
+# the apt-cache command tries to get the correct debian package version form the
+# specfiied gocd_server_version variable
+RUN echo "deb https://download.gocd.io /" > /etc/apt/sources.list.d/gocd.list \
+  && curl https://download.gocd.io/GOCD-GPG-KEY.asc | apt-key add - \
+  && apt-get update \
+  && apt-get install -y go-server=$(apt-cache show go-server | grep "Version: ${GOCD_SERVER_VERSION}.*" | head -n 1 | awk '{print $2}') \
+  && rm -rf /var/lib/apt/lists/*
 
 # install additional plugins we need
-RUN mkdir -p ${GO_DATA}/plugins/external \
-  && cd ${GO_DATA}/plugins/external \
-#  && curl -LO https://github.com/gocd-contrib/gocd-oauth-login/releases/download/v${PLUGIN_GITHUB_OAUTH_LOGIN}/github-oauth-login-${PLUGIN_GITHUB_OAUTH_LOGIN}.jar \
-  && curl -LO https://github.com/tomzo/gocd-yaml-config-plugin/releases/download/${PLUGIN_YAML_CONFIG_PLUGIN}/yaml-config-plugin-${PLUGIN_YAML_CONFIG_PLUGIN}.jar \
-  && chown -R go:go ${GO_DATA}/plugins
+RUN mkdir ${GOCD_PLUGINS} \
+  && cd ${GOCD_PLUGINS}\
+  && curl -LO https://github.com/tomzo/gocd-yaml-config-plugin/releases/download/${GOCD_PLUGIN_YAML_CONFIG_PLUGIN}/yaml-config-plugin-${GOCD_PLUGIN_YAML_CONFIG_PLUGIN}.jar \
+  && chown -R go:go ${GOCD_PLUGINS}
 
 # add cruise config xml and custom entrypoint script
-ADD build/cruise-config.xml /cruise-config-custom.xml
-ADD build/docker-entrypoint.sh /docker-entrypoint-custom.sh
-ADD build/ssh.config ${GO_HOME}/.ssh/config
-RUN chmod +x /docker-entrypoint-custom.sh \
-  && chown -R go:go ${GO_HOME}/.ssh
+ADD build/cruise-config.xml /cruise-config.xml
+ADD build/docker-entrypoint.sh /docker-entrypoint.sh
+ADD build/ssh.config ${GOCD_HOME}/.ssh/config
+# set the correct permissions
+RUN chmod +x /docker-entrypoint.sh \
+  && chown -R go:go ${GOCD_HOME}/.ssh
 
-ENTRYPOINT ["/docker-entrypoint-custom.sh"]
+EXPOSE 8153
+EXPOSE 8154
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
