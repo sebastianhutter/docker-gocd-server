@@ -73,7 +73,7 @@ chown -R go:go "${GOCD_DATA}/plugins"
 # now start the server
 # we start the server daemonized (see the /etc/defaults/go-server DAEMON flag)
 # to keep the container running we tail the go-cd server log files
-su - go -c "/usr/share/go-server/server.sh"
+su - go -c "${GOCD_SCRIPT}/server.sh"
 # we sleep 3 seconds to surpress the error message about missing logfiles
 sleep 3
-su - go -c "tail -qF /var/log/go-server/go-server.out.log /var/log/go-server/go-server.log"
+su - go -c "tail -qF ${GOCD_LOG}/go-server.out.log ${GOCD_LOG}/go-server.log"
