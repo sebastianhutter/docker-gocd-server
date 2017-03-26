@@ -36,12 +36,11 @@ fi
 
 if [ "${GOCD_ENABLE_LDAP,,}" == 'true' ]; then
   TMPLDAP=$(mktemp)
-  echo "\
+  echo -e "\
   <security allowOnlyKnownUsersToLogin=\"false\">\
     <ldap uri=\"${GOCD_LDAPURI}\" managerDn=\"${GOCD_LDAPMANAGERDN}\" managerPassword=\"${GOCD_LDAPMANAGERPASSWORD}\" searchFilter=\"${GOCD_LDAPSEARCHFILTER}\">\n\
       <bases>\n    <base value=\"${GOCD_LDAPSEARCHBASE}\" />\n</bases>\n\
     </ldap>\n\
-    <admins>\n    <user>${GOCD_LDAPADMINUSER}</user>\n</admins>\
   </security>
   " > ${TMPLDAP}
   sed -i "/<!-- CONFIGLDAP -->/r ${TMPLDAP}" "${GOCD_CONFIG}/cruise-config.xml"
