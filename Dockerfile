@@ -18,7 +18,7 @@ ENV DEFAULTS=/etc/default/go-server
 # install requirements for the gocd server
 RUN echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/backports.list \
  && apt-get update \
- && apt-get install -y curl jq gettext apt-transport-https \
+ && apt-get install -y curl jq gettext apt-transport-https git \
  && apt-get install -y -t jessie-backports ca-certificates-java openjdk-8-jre-headless \
  && rm -rf /var/lib/apt/lists/*
 
