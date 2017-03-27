@@ -5,7 +5,8 @@ MAINTAINER <mail@sebastian-hutter.ch>
 # build arguments
 ARG GOCD_SERVER_VERSION=17.3.0
 # plugin versions to install
-ARG GOCD_PLUGIN_YAML_CONFIG_PLUGIN=0.4.0
+ARG GOCD_PLUGIN_YAML_CONFIG=0.4.0
+ARG GOCD_PLUGIN_SCRIPT_EXECUTOR=0.3
 # environment variables used for building and entrypoint
 ENV GOCD_DATA=/var/lib/go-server
 ENV GOCD_PLUGINS=/goplugins
@@ -34,7 +35,8 @@ RUN echo "deb https://download.gocd.io /" > /etc/apt/sources.list.d/gocd.list \
 # install additional plugins we need
 RUN mkdir ${GOCD_PLUGINS} \
   && cd ${GOCD_PLUGINS}\
-  && curl -LO https://github.com/tomzo/gocd-yaml-config-plugin/releases/download/${GOCD_PLUGIN_YAML_CONFIG_PLUGIN}/yaml-config-plugin-${GOCD_PLUGIN_YAML_CONFIG_PLUGIN}.jar \
+  && curl -LO https://github.com/tomzo/gocd-yaml-config-plugin/releases/download/${GOCD_PLUGIN_YAML_CONFIG}/yaml-config-plugin-${GOCD_PLUGIN_YAML_CONFIG}.jar \
+  && curl -LO https://github.com/gocd-contrib/script-executor-task/releases/download/${GOCD_PLUGIN_SCRIPT_EXECUTOR}/script-executor-${GOCD_PLUGIN_SCRIPT_EXECUTOR}.0.jar \
   && chown -R go:go ${GOCD_PLUGINS}
 
 # add cruise config xml and custom entrypoint script
