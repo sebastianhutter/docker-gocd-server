@@ -1,5 +1,5 @@
 # simple makefile to build and push docker container images
-IMAGE_NAME = sebastianhutter/gocd-server
+IMAGE_NAME = projectthor/gocd-server
 PLUGIN_YAML_CONFIG="0.4.0"
 PLUGIN_SCRIPT_EXECUTOR="0.3"
 
