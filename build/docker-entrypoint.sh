@@ -64,12 +64,12 @@ fi
 # and finally we need to get the credentials and git
 # we fetch the credentials from our internal vault
 # authenticate against the vault
-ACCESS_TOKEN=$(curl -X POST \
-   -d "{\"role_id\":\"${VAULT_ROLE_ID}\",\"secret_id\":\"$VAULT_SECRET_ID\"}" \
-   ${VAULT_SERVER}/v1/auth/approle/login | jq -r .auth.client_token)
+# ACCESS_TOKEN=$(curl -X POST \
+#    -d "{\"role_id\":\"${VAULT_ROLE_ID}\",\"secret_id\":\"$VAULT_SECRET_ID\"}" \
+#    ${VAULT_SERVER}/v1/auth/approle/login | jq -r .auth.client_token)
 
-# write the private key file
-curl -X GET -H "X-Vault-Token:${ACCESS_TOKEN}" ${VAULT_SERVER}/v1/${VAULT_SECRET_GITHUB_KEY} | jq -r .data.value > ${GOCD_HOME}/.ssh/id_rsa
+# # write the private key file
+# curl -X GET -H "X-Vault-Token:${ACCESS_TOKEN}" ${VAULT_SERVER}/v1/${VAULT_SECRET_GITHUB_KEY} | jq -r .data.value > ${GOCD_HOME}/.ssh/id_rsa
 unset OUTPUT
 chown go:go ${GOCD_HOME}/.ssh/id_rsa
 chmod 0600 ${GOCD_HOME}/.ssh/id_rsa
