@@ -43,6 +43,17 @@ sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
 rm ${TMPREPO}
 fi
 
+# add environments
+TMPENVS=$(mktemp)
+if [ -n "$GOCD_YAML_ENVIRONMENTS" ]; then
+for r in $GOCD_YAML_ENVIRONMENTS; do
+  # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
+  echo -e "  <environment name=\"${r}\" />\n" >> ${TMPENVS}
+done
+sed -i "/<!-- CONFIGENVS -->/r ${TMPENVS}" "${GOCD_CONFIG}/cruise-config.xml"
+rm ${TMPENVS}
+fi
+
 # now check if ldap is enabled. if so add ldap to the cruise config
 if [ "${GOCD_ENABLE_LDAP,,}" == 'true' ]; then
   TMPLDAP=$(mktemp)
