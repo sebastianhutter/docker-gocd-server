@@ -34,14 +34,32 @@ chown go:go "${GOCD_CONFIG}/cruise-config.xml"
 # see: https://github.com/tomzo/gocd-yaml-config-plugin#setup
 # to achieve an automated config via env variable we accept a list of repos
 TMPREPO=$(mktemp)
-if [ -n "$GOCD_YAML_REPOSITORIES" ]; then
-for r in $GOCD_YAML_REPOSITORIES; do
-  # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
-  echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
-done
-sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
-rm ${TMPREPO}
+# first lets check if we have a download url for the repositories
+if [ -n "$GOCD_YAML_REPOSITORIES_URL" ]; then
+  REPO_FILE="${GOCD_HOME}/gocd.repositories"
+  # now try to download the configuration file
+  if [ -z "$CONFIG_USERNAME" ] || [ -z "$CONFIG_PASSWORD" ]; then
+    # if no usename and password is specified
+    curl "$CONFIG_URL" -o "${REPO_FILE}"
+  else
+    curl --user $CONFIG_USERNAME:$CONFIG_PASSWORD "$CONFIG_URL" -o "${REPO_FILE}"
+  fi
+  # now loop trough the file and add a line to tmprepo for each entry
+  while read r; do
+    # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
+    echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
+  echo $p
+  done <"${REPO_FILE}"
+  sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
+# if no url was specified lets check for the environment variable
+elif [ -n "$GOCD_YAML_REPOSITORIES" ]; then
+  for r in $GOCD_YAML_REPOSITORIES; do
+    # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
+    echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
+  done
+  sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
 fi
+rm ${TMPREPO}
 
 # now check if ldap is enabled. if so add ldap to the cruise config
 if [ "${GOCD_ENABLE_LDAP,,}" == 'true' ]; then
