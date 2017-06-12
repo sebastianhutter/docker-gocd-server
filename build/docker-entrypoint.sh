@@ -36,29 +36,32 @@ chown go:go "${GOCD_CONFIG}/cruise-config.xml"
 TMPREPO=$(mktemp)
 # first lets check if we have a download url for the repositories
 if [ -n "$GOCD_YAML_REPOSITORIES_URL" ]; then
+  echo "retrieving repository list from url ${GOCD_YAML_REPOSITORIES_URL}"
   REPO_FILE="${GOCD_HOME}/gocd.repositories"
   # now try to download the configuration file
   if [ -z "$CONFIG_USERNAME" ] || [ -z "$CONFIG_PASSWORD" ]; then
     # if no usename and password is specified
-    curl "$CONFIG_URL" -o "${REPO_FILE}"
+    curl "$GOCD_YAML_REPOSITORIES_URL" -o "${REPO_FILE}"
   else
-    curl --user $CONFIG_USERNAME:$CONFIG_PASSWORD "$CONFIG_URL" -o "${REPO_FILE}"
+    curl --user $CONFIG_USERNAME:$CONFIG_PASSWORD "$GOCD_YAML_REPOSITORIES_URL" -o "${REPO_FILE}"
   fi
   # now loop trough the file and add a line to tmprepo for each entry
   while read r; do
     # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
     echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
-  echo $p
   done <"${REPO_FILE}"
   sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
 # if no url was specified lets check for the environment variable
 elif [ -n "$GOCD_YAML_REPOSITORIES" ]; then
+  echo "retrieving repository list from environment variable"
   for r in $GOCD_YAML_REPOSITORIES; do
     # http://stackoverflow.com/questions/22497246/insert-multiple-lines-into-a-file-after-specified-pattern-using-shell-script
     echo -e "<config-repo plugin=\"yaml.config.plugin\">\n  <git url=\"git@github.com:${r}.git\" />\n</config-repo>" >> ${TMPREPO}
   done
   sed -i "/<!-- CONFIGREPOS -->/r ${TMPREPO}" "${GOCD_CONFIG}/cruise-config.xml"
 fi
+echo "added the following tmprepo list"
+cat  ${TMPREPO}
 rm ${TMPREPO}
 
 # now check if ldap is enabled. if so add ldap to the cruise config
