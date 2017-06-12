@@ -3,7 +3,7 @@ MAINTAINER <mail@sebastian-hutter.ch>
 
 
 # build arguments
-ARG GOCD_SERVER_VERSION=17.4.0
+ARG GOCD_SERVER_VERSION=17.5.0
 # plugin versions to install
 ARG GOCD_PLUGIN_YAML_CONFIG=0.4.0
 ARG GOCD_PLUGIN_SCRIPT_EXECUTOR=0.3
@@ -22,6 +22,10 @@ RUN echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sou
  && apt-get install -y curl jq gettext apt-transport-https git \
  && apt-get install -y -t jessie-backports ca-certificates-java openjdk-8-jre-headless \
  && rm -rf /var/lib/apt/lists/*
+
+# create go user with fixed uid/gid
+RUN groupadd --gid 1999 go && \
+    useradd --create-home --home-dir /var/go --uid 1999 --gid 1999 --system go
 
 # install the gocd server
 # the apt-cache command tries to get the correct debian package version form the
