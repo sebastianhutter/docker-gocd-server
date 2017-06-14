@@ -3,7 +3,7 @@ MAINTAINER <mail@sebastian-hutter.ch>
 
 
 # build arguments
-ARG GOCD_SERVER_VERSION=17.3.0
+ARG GOCD_SERVER_VERSION=17.5.0
 # plugin versions to install
 ARG GOCD_PLUGIN_YAML_CONFIG=0.4.0
 ARG GOCD_PLUGIN_SCRIPT_EXECUTOR=0.3
