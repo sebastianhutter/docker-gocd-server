@@ -8,6 +8,7 @@ ARG GOCD_SERVER_VERSION=17.6.0
 ARG GOCD_PLUGIN_YAML_CONFIG=0.4.0
 ARG GOCD_PLUGIN_SCRIPT_EXECUTOR=0.3
 ARG GOCD_PLUGIN_GITHUB_PR_POLLER=1.3.3
+ARG GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER=1.3
 # environment variables used for building and entrypoint
 ENV GOCD_DATA=/var/lib/go-server
 ENV GOCD_PLUGINS=/goplugins
@@ -43,6 +44,7 @@ RUN mkdir ${GOCD_PLUGINS} \
   && curl -LO https://github.com/tomzo/gocd-yaml-config-plugin/releases/download/${GOCD_PLUGIN_YAML_CONFIG}/yaml-config-plugin-${GOCD_PLUGIN_YAML_CONFIG}.jar \
   && curl -LO https://github.com/gocd-contrib/script-executor-task/releases/download/${GOCD_PLUGIN_SCRIPT_EXECUTOR}/script-executor-${GOCD_PLUGIN_SCRIPT_EXECUTOR}.0.jar \
   && curl -LO https://github.com/ashwanthkumar/gocd-build-github-pull-requests/releases/download/v${GOCD_PLUGIN_GITHUB_PR_POLLER}/github-pr-poller-${GOCD_PLUGIN_GITHUB_PR_POLLER}.jar \
+  && curl -LO https://github.com/gocd-contrib/gocd-build-status-notifier/releases/download/${GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER}/github-pr-status-${GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER}.jar \
   && chown -R go:go ${GOCD_PLUGINS}
 
 # add cruise config xml and custom entrypoint script
