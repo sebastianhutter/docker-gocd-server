@@ -1,0 +1,46 @@
+version: '3'
+
+volumes:
+  vol-var-go:
+    driver: local
+  vol-etc-go:
+    driver: local
+  vol-go-server-db:
+    driver: local
+  vol-go-server-artifacts:
+    driver: local
+
+
+services:
+  server:
+    container_name: server
+    restart: on-failure
+    build: .
+    environment:
+      GOCD_YAML_REPOSITORIES: ""
+      GOCD_ENABLE_LDAP: 'false'
+      GOCD_SITEURL: "http://localhost:8153"
+      GOCD_SECURESITEURL: "https://localhost:8154"
+      GOCD_SERVERID: localci
+      GOCD_AGENTAUTOREGISTERKEY: t0p-SeCrEt
+      GOCD_YAML_ENVIRONMENTS: "dev staging tools"
+      LOGLEVEL: debug
+    volumes:
+      - vol-var-go:/var/go
+      - vol-etc-go:/etc/go
+      - vol-go-server-db:/var/lib/go-server/db
+      - vol-go-server-artifacts:/var/lib/go-server/artifacts
+    ports:
+      - '8153:8153'
+      - '8154:8154'
+
+  agent1:
+    container_name: agent1
+    restart: on-failure
+    image: projectthor/gocd-agent:latest
+    links:
+      - server
+    environment:
+      GO_SERVER_URL: "https://server:8154/go"
+      GOCD_AGENTAUTOREGISTERKEY: t0p-SeCrEt
+      GOCD_AGENTAUTOREGISTERENV: tools
