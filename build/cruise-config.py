@@ -21,7 +21,7 @@ loglevel = os.getenv("LOGLEVEL", "info")
 if loglevel.lower() == "debug":
   logger.setLevel(logging.DEBUG)
 else:
-  logger.setLevel(logging.info)
+  logger.setLevel(logging.INFO)
 
 class CruiseConfig:
   """
