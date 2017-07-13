@@ -21,7 +21,7 @@ ENV DEFAULTS=/etc/default/go-server
 # install requirements for the gocd server
 RUN echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/backports.list \
  && apt-get update \
- && apt-get install -y curl jq gettext apt-transport-https git \
+ && apt-get install -y curl python3 python3-lxml apt-transport-https git \
  && apt-get install -y -t jessie-backports ca-certificates-java openjdk-8-jre-headless \
  && rm -rf /var/lib/apt/lists/*
 
@@ -48,11 +48,13 @@ RUN mkdir ${GOCD_PLUGINS} \
   && chown -R go:go ${GOCD_PLUGINS}
 
 # add cruise config xml and custom entrypoint script
-ADD build/cruise-config.xml /cruise-config.xml
+#ADD build/cruise-config.xml /cruise-config.xml
+ADD build/cruise-config.xml.template /cruise-config.xml.template
+ADD build/cruise-config.py /cruise-config.py
 ADD build/docker-entrypoint.sh /docker-entrypoint.sh
 ADD build/ssh.config ${GOCD_HOME}/.ssh/config
 # set the correct permissions
-RUN chmod +x /docker-entrypoint.sh \
+RUN chmod +x /docker-entrypoint.sh /cruise-config.py \
   && chown -R go:go ${GOCD_HOME}/.ssh
 
 EXPOSE 8153
