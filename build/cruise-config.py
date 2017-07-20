@@ -148,6 +148,48 @@ class CruiseConfig:
       # append config-repo to config-repos
       configrepos.append(configrepo)
 
+  def removeSCMRepos(self):
+    """
+      remove all configuration repositories
+    """
+    scmrepos = self.cruise_root.find("scms")
+    if scmrepos is not None:
+      for repo in scmrepos.findall("scm"):
+        logger.debug("Remove scm {}".format(repo))
+        scmrepos.remove(repo)
+
+  def addSCMRepos(self):
+    """
+      add configuration repositories
+      https://docs.gocd.org/17.7.0/extension_points/scm_extension.html#sample-xml-configuration
+    """
+    scmrepos = self.cruise_root.find("scms")
+    # loop trough all defined source repositories
+    # and append them to the config repos
+    if scmrepos is None:
+      logger.debug("SCMs is empty. Creating parent element")
+      scmrepos = etree.Element("scms")
+      self.cruise_root.insert(1,scmrepos)
+
+    for sr in self.source_repositories:
+      logger.debug("Add SCM {}".format(sr))
+      repoId = os.path.basename(sr)
+      configrepo = etree.Element("scm",id=repoId, name=repoId)
+      pluginConfig = etree.Element("pluginConfiguration", id="github.pr", version="1")
+      cfg = etree.Element("configuration")
+      prop = etree.Element("property")
+      key = etree.Element("key")
+      key.text = "url"
+      val = etree.Element("value")
+      val.text = "git@github.com:{}.git".format(sr)
+      prop.append(key)
+      prop.append(val)
+      cfg.append(prop)
+      configrepo.append(pluginConfig)
+      configrepo.append(cfg)
+      scmrepos.append(configrepo)
+
+
   def removeUndefinedEnvironments(self):
     """
       remove all undefined environments
@@ -206,8 +248,12 @@ def main():
     config.removePipelines()
     logger.info("Remove Configuration Repositories")
     config.removeConfigRepos()
+    logger.info("Remove SCM Repositories")
+    config.removeSCMRepos()
     logger.info("Add Configuration Repositories")
     config.addConfigRepos()
+    logger.info("Add SCM Repositories")
+    config.addSCMRepos()
     logger.info("Remove undefined environments")
     config.removeUndefinedEnvironments()
     logger.info("Add environments")
