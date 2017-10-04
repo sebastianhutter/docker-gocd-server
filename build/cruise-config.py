@@ -56,7 +56,7 @@ class CruiseConfig:
     self.webhooksecret = os.getenv("GOCD_WEBHOOK_SECRET",False)
     self.artifactsdir = os.getenv("GOCD_ARTIFACTSDIR","artifacts")
     self.commandrepositorylocation = os.getenv("GOCD_COMMANDREPOSITORYLOCATION","default")
-    self.schemaversion = os.getenv("GOCD_SCHEMAVERSION","93")
+    self.schemaversion = os.getenv("GOCD_SCHEMAVERSION","95")
 
     # load the xml configuration
     if os.path.isfile(self.xmlfile):
