@@ -1,9 +1,11 @@
 # simple makefile to build and push docker container images
 IMAGE_NAME = projectthor/gocd-server
 
-# if the go label is set overwrite the commit id env variable
-ifneq ($(GO_PIPELINE_LABEL),"")
-export COMMIT_ID := $(GO_PIPELINE_LABEL)
+# If the GoCD label is set overwrite the commit ID env variable
+ifneq ($(GO_PIPELINE_LABEL),)
+	export COMMIT_ID := $(GO_PIPELINE_LABEL)	
+else
+	export COMMIT_ID = latest
 endif
 
 # build
