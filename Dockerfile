@@ -20,7 +20,10 @@ ENV GOCD_SCRIPT=/usr/share/go-server
 ENV DEFAULTS=/etc/default/go-server
 
 # install requirements for the gocd server
-RUN apk add --no-cache python3 py3-lxml openjdk8-jre curl git ca-certificates openjdk8 zip tini bash
+# split installation into multiple commands so we dont have to update big layers
+RUN apk add --no-cache python3 py3-lxml 
+RUN apk add --no-cache openjdk8
+RUN apk add --no-cache curl git ca-certificates zip tini bash openssh-client
 
 # add go user and group
 RUN addgroup -g 1999 -S go \
