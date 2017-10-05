@@ -139,9 +139,10 @@ class CruiseConfig:
       self.cruise_root.insert(1,configrepos)
 
     for sr in self.source_repositories:
+      repoId = os.path.basename(sr)
       # create xml elements
       logger.debug("Add config-repo {}".format(sr))
-      configrepo = etree.Element("config-repo",plugin="yaml.config.plugin")
+      configrepo = etree.Element("config-repo",pluginId="yaml.config.plugin",id=repoId)
       git = etree.Element("git", url="git@github.com:{}.git".format(sr))
       # append git config to config-repo element
       configrepo.append(git)
@@ -211,7 +212,7 @@ class CruiseConfig:
       logger.debug("environments  empty. Creating parent element")
       environments = etree.Element("environments")
       # insert the environments after the config-repos element (3 place)
-      self.cruise_root.insert(2,environments)
+      self.cruise_root.insert(3,environments)
 
     # create a list with all defined environments
     xmlenvs = []
@@ -252,8 +253,8 @@ def main():
     config.removeSCMRepos()
     logger.info("Add Configuration Repositories")
     config.addConfigRepos()
-    #logger.info("Add SCM Repositories")
-    #config.addSCMRepos()
+    logger.info("Add SCM Repositories")
+    config.addSCMRepos()
     logger.info("Remove undefined environments")
     config.removeUndefinedEnvironments()
     logger.info("Add environments")
