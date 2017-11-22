@@ -9,6 +9,7 @@ import os
 from io import StringIO, BytesIO
 import logging
 import traceback
+from distutils.util import strtobool
 
 # configure logger
 # http://docs.python-guide.org/en/latest/writing/logging/
@@ -22,6 +23,14 @@ if loglevel.lower() == "debug":
   logger.setLevel(logging.DEBUG)
 else:
   logger.setLevel(logging.INFO)
+
+# copied from https://github.com/ProjectThor/search-faktli/blob/60e9214f51dbd5e95bcbd84695fb92fef91d4b91/app/config.py#L31
+def _as_bool(obj):
+    """
+    :param obj:
+    :return:
+    """
+    return bool(strtobool(str(obj)))
 
 class CruiseConfig:
   """
@@ -57,7 +66,17 @@ class CruiseConfig:
     self.artifactsdir = os.getenv("GOCD_ARTIFACTSDIR","artifacts")
     self.commandrepositorylocation = os.getenv("GOCD_COMMANDREPOSITORYLOCATION","default")
     self.schemaversion = os.getenv("GOCD_SCHEMAVERSION","95")
-
+    # ldap configuration
+    self.ldapenabled = _as_bool(os.getenv('GOCD_LDAP_ENABLE', False))
+    self.ldapid = os.getenv("GOCD_LDAP_ID", "ldap")
+    self.ldapconfiguration = {
+      'Url': os.getenv("GOCD_LDAP_URL", "ldaps://ldap-read.siroop.work:636"),
+      'ManagerDN': os.getenv("GOCD_LDAP_BINDDN", "uid=sys.gocd,ou=System Accounts,ou=Accounts,dc=siroop,dc=work"),
+      'Password': os.getenv("GOCD_LDAP_BINDPASS", None),
+      'SearchBases': os.getenv("GOCD_LDAP_SEARCHBASES", "dc=siroop,dc=work").split(";"),
+      'UserLoginFilter': os.getenv("GOCD_LDAP_USERLOGINFILTER", "(|(uid={0})(mail={0}))"),
+      'UserSearchFilter': os.getenv("GOCD_LDAP_USERFILTERSEARCHFILTER", "(|(uid=*{0}*)(mail={0}*)(otherMailbox=*{0}*))")
+    }
     # load the xml configuration
     if os.path.isfile(self.xmlfile):
       logger.info("Load xml configuration {}".format(self.xmlfile))
@@ -73,7 +92,7 @@ class CruiseConfig:
     """
       update server element attributes
     """
-    server = self.cruise_root.find("server")
+    server = self.getServerConfiguration()
 
     if server is None:
       raise BaseException("No server configuration found. Config is invalid")
@@ -94,6 +113,16 @@ class CruiseConfig:
     if not self.cruise_root.attrib.get("schemaVersion"):
       self.cruise_root.attrib.update({"schemaVersion":self.schemaversion})
 
+  def getServerConfiguration(self):
+    """ 
+      returns the server configuration.
+      raises exception if doesnt find it
+    """
+    server = self.cruise_root.find("server")
+    if server is None:
+      raise BaseException("No server configuration found. Config is invalid")
+    return server
+
   def setServerConfiguration(self):
     """
       set server configuration (serverid etc.)
@@ -105,6 +134,60 @@ class CruiseConfig:
     self.updateServerAttribute("webhookSecret",self.webhooksecret)
     self.updateServerAttribute("commandRepositoryLocation",self.commandrepositorylocation)
     self.updateServerAttribute("serverId",self.serverid)
+
+  def removeSecurityConfiguration(self):
+    """
+      remove security configuration
+    """
+    server = self.getServerConfiguration()
+    security = server.find("security")
+    if security is not None:
+      logger.debug("Remove security config")
+      server.remove(security)
+
+  def setSecurityConfiguration(self):
+    """
+      add security configuration
+    """
+    # get the server config
+    server = self.getServerConfiguration()
+    # create an empty list for the security entries
+    logger.debug("Creating parent element for security")
+    security = etree.Element("security")
+
+    # fill up the security element
+    if self.ldapenabled:
+      logger.debug("Setup ldap authentication")
+      # create the authconfigs element with a custom id
+      # and the ldap authentication plugin
+      logger.debug("LDAP is enabled. Create authconfig elements")
+      authconfigs = etree.Element("authConfigs")
+      authconfig = etree.Element("authConfig",pluginId="cd.go.authentication.ldap",id=self.ldapid)
+      # now add the necesseary properties for the ldap authentication
+      for k, v in self.ldapconfiguration.items():
+        logger.debug("Add property for key {} with value {}".format(k,v))
+        prop = etree.Element("property")
+        key = etree.Element("key")
+        value = etree.Element("value")
+        key.text = k
+        # if the value is a list we need to add values separated by newline
+        if isinstance(v, list):
+          value.text = "\n".join(v)
+        else:
+          value.text = v
+        # now add the property to the authconfig
+        prop.append(key)
+        prop.append(value)
+        authconfig.append(prop)
+
+      # add the security element to the server config
+      logger.debug("Append authconfig ldap element to authconfigs element")
+      authconfigs.append(authconfig)
+      logger.debug("Append authconfigs element to security element")
+      security.append(authconfigs)
+      logger.debug("Append security element to server element")
+      security.append(authconfigs)
+      server.append(security)
 
   def removePipelines(self):
     """
@@ -245,6 +328,10 @@ def main():
     config.setSchemaVersion()
     logger.info("Set Server Configuration")
     config.setServerConfiguration()
+    logger.info("Remove Security Configuration")
+    config.removeSecurityConfiguration()
+    logger.info("Set Security Configuration")
+    config.setSecurityConfiguration()
     logger.info("Remove Pipeline Configurations")
     config.removePipelines()
     logger.info("Remove Configuration Repositories")
