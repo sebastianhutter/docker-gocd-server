@@ -6,6 +6,7 @@
 
 from lxml import etree
 import os
+import shutil
 from io import StringIO, BytesIO
 import logging
 import traceback
@@ -41,8 +42,13 @@ class CruiseConfig:
     """
       initialize configuration values
     """
-    self.xmlfile = "/etc/go/cruise-config.xml"
+
+    self.xmlfile = os.getenv("GOCD_CONFIG") + "/cruise-config.xml"
     self.templatefile = "/cruise-config.xml.template"
+    
+    # ownerhsip for config file
+    self.owner = "go"
+    self.group = "go"
 
     # create a list of environments (defined via env)
     self.environments = os.getenv("GOCD_YAML_ENVIRONMENTS")
@@ -316,6 +322,12 @@ class CruiseConfig:
     """
     self.cruise.write(self.xmlfile, pretty_print=True, xml_declaration=True, encoding="utf-8")
 
+  def chownXmlConfiguration(self):
+    """
+      change the ownership of the written xml configuration file
+    """
+    shutil.chown(self.xmlfile, user=self.owner, group=self.group)
+
 def main():
     """
         main function
@@ -348,6 +360,8 @@ def main():
     config.addEnvironments()
     logger.info("Write XML configuration")
     config.writeXMLConfiguration()
+    logger.info("Set ownership of file")
+    config.chownXmlConfiguration()
 
     logger.info('End cruise-config.xml configuration')
 
