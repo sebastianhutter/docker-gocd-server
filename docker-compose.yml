@@ -1,13 +1,11 @@
 version: '3'
 
 volumes:
-  vol-var-go:
+  vol-config:
     driver: local
-  vol-etc-go:
+  vol-db:
     driver: local
-  vol-go-server-db:
-    driver: local
-  vol-go-server-artifacts:
+  vol-artifacts:
     driver: local
 
 
@@ -23,13 +21,12 @@ services:
       GOCD_SECURESITEURL: "https://localhost:8154"
       GOCD_SERVERID: localci
       GOCD_AGENTAUTOREGISTERKEY: t0p-SeCrEt
-      GOCD_YAML_ENVIRONMENTS: "dev staging tools"
+      GOCD_YAML_ENVIRONMENTS: "dev staging tools prod balder-prod balder-dev balder-staging"
       LOGLEVEL: debug
     volumes:
-      - vol-var-go:/var/go
-      - vol-etc-go:/etc/go
-      - vol-go-server-db:/var/lib/go-server/db
-      - vol-go-server-artifacts:/var/lib/go-server/artifacts
+      - vol-config:/godata/config
+      - vol-db:/godata/db
+      - vol-artifacts:/godata/artifacts
     ports:
       - '8153:8153'
       - '8154:8154'
