@@ -22,6 +22,9 @@ ARG GOCD_PLUGIN_YAML_CONFIG=0.6.0
 ARG GOCD_PLUGIN_SCRIPT_EXECUTOR=0.3
 ARG GOCD_PLUGIN_GITHUB_PR_POLLER=1.3.4
 ARG GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER=1.4
+ARG GOCD_PLUGIN_DOCKER_SWARM_ELASTIC_AGENT=2.2.0
+
+
 
 # install additional plugins
 RUN mkdir -p ${GOCD_ADDONS} ${GOCD_ARTIFACTS} ${GOCD_CONFIG} ${GOCD_DB} ${GOCD_LOGS} ${GOCD_PLUGINS} \
@@ -30,6 +33,7 @@ RUN mkdir -p ${GOCD_ADDONS} ${GOCD_ARTIFACTS} ${GOCD_CONFIG} ${GOCD_DB} ${GOCD_L
   && curl -LO https://github.com/gocd-contrib/script-executor-task/releases/download/${GOCD_PLUGIN_SCRIPT_EXECUTOR}/script-executor-${GOCD_PLUGIN_SCRIPT_EXECUTOR}.0.jar \
   && curl -LO https://github.com/ashwanthkumar/gocd-build-github-pull-requests/releases/download/v${GOCD_PLUGIN_GITHUB_PR_POLLER}/github-pr-poller-${GOCD_PLUGIN_GITHUB_PR_POLLER}.jar \
   && curl -LO https://github.com/gocd-contrib/gocd-build-status-notifier/releases/download/${GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER}/github-pr-status-${GOCD_PLUGIN_GITHUB_BUILD_STATUS_NOTIFIER}.jar \
+  && curl -LO https://github.com/gocd-contrib/docker-swarm-elastic-agents/releases/download/v${GOCD_PLUGIN_DOCKER_SWARM_ELASTIC_AGENT}/docker-swarm-elastic-agents-${GOCD_PLUGIN_DOCKER_SWARM_ELASTIC_AGENT}.jar \
   && chown -R go:go ${GOCD_BASE}
 
 # add cruise config xml and custom entrypoint script
